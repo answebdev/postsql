@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { UserInputError } = require('apollo-server');
 
 const { SECRET_KEY } = require('../../config');
 const User = require('../../models/User');
@@ -8,12 +9,20 @@ module.exports = {
   Mutation: {
     async register(
       parent,
-      { registerInput: { username, email, password, confirmPassword } },
-      context,
-      info
+      { registerInput: { username, email, password, confirmPassword } }
     ) {
       // Validate user data
       // Make sure user does not already exist
+      const user = await User.findOne({ username });
+      if (user) {
+        // 'UserInputError' is from ApolloServer (require up above)
+        throw new UserInputError('Username is taken', {
+          // Error for the front end - to display on the form:
+          errors: {
+            username: 'This username is taken',
+          },
+        });
+      }
       // Hash password and create authentication token - we'll choose '12' for the number of rounds
       password = await bcrypt.hash(password, 12);
 
