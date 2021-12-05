@@ -5,7 +5,9 @@ module.exports = {
   Query: {
     async getPosts() {
       try {
-        const posts = await Post.find();
+        // 'createdAt: -1' means that we want to sort all the posts in descending order,
+        // i.e., newer posts at the top:
+        const posts = await Post.find().sort({ createdAt: -1 });
         return posts;
       } catch (err) {
         throw new Error(err);
